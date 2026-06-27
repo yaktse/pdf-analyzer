@@ -33,9 +33,6 @@ class Agent:
             SystemMessage(
                 content="You are a helpful assistant."
             ),
-            HumanMessage(
-                content="Explain LangChain simply."
-            ),
         ]
 
     def reply(self, prompt):

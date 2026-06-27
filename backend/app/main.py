@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
-from app.agent import Agent
 from fastapi.middleware.cors import CORSMiddleware
+from pathlib import Path
+import time
+
+from app.agent import Agent
+from app.preprocess import Preprocessor
 
 app = FastAPI(title="PDF Analyzer")
 app.add_middleware(
@@ -14,7 +18,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Setup context directory
+CONTEXT_DIR = Path("_context")
+CONTEXT_DIR.mkdir(exist_ok=True)
+
 agent = Agent()
+preprocessor = Preprocessor()
 
 @app.get("/")
 def root():
@@ -35,4 +44,34 @@ def reply(req: ChatRequest):
 
     return {
         "answer": response_str
+    }
+
+@app.post("/upload_pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    # TODO: Handle user inputing duplicate files
+
+    contents = await file.read()
+    # Check MIME type
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF files are allowed."
+        )
+
+    # Check extension
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="File must have a .pdf extension."
+        )
+
+    filepath = CONTEXT_DIR / file.filename
+    with open(filepath, "wb") as f:
+        f.write(contents)
+
+    time.sleep(3) # For testing
+    return {
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "size": len(contents),
     }

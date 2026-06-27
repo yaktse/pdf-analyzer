@@ -54,50 +54,199 @@ function App() {
         setLoading(false);
     }
 
+    const [files, setFiles] = useState([
+        "book.pdf",
+        "notes.pdf"
+    ]);
+
+    const [uploadError, setUploadError] = useState("");
+    const [uploadStatus, setUploadStatus] = useState("");
+    const [statusVisible, setStatusVisible] = useState(false);
+
+    function showUploadStatus(message, isError = false) {
+        setUploadError(isError);
+        setUploadStatus(message);
+        setStatusVisible(true);
+
+        // Start fading after 7 seconds
+        setTimeout(() => {
+            setStatusVisible(false);
+        }, 7000);
+
+        // Remove from DOM after animation completes
+        setTimeout(() => {
+            setUploadStatus("");
+            setUploadError(false);
+        }, 8000);
+    }
+
+    async function uploadFile(file) {
+        const formData = new FormData();
+
+        formData.append("file", file);
+
+        showUploadStatus("Uploading...");
+
+        try {
+            await axios.post(
+                "http://localhost:8080/upload_pdf",
+                formData
+            );
+
+            setFiles(prev => [
+                ...prev,
+                file.name
+            ]);
+
+            showUploadStatus(
+                `Uploaded: ${file.name}`
+            );
+        } catch (error) {
+            let message = "Upload failed.";
+
+            if (error.response?.data?.detail) {
+                message = error.response.data.detail;
+            } else if (error.message) {
+                message = error.message;
+            }
+
+            showUploadStatus(message, true);
+        }
+    }
+
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+
     return (
         <div className="app">
-            <div className="chat-window">
-                {messages.map((msg, index) => (
-                    <div
-                        key={index}
-                        className={`message ${msg.role}`}
-                    >
-                        <div className="bubble">
-                            <ReactMarkdown>
-                                {msg.text}
-                            </ReactMarkdown>
-                        </div>
-                    </div>
-                ))}
+            {/* Main content */}
 
-                {loading && (
-                    <div className="message assistant">
-                        <div className="bubble">
-                            Thinking...
-                        </div>
-                    </div>
-                )}
-            </div>
+            <div className="main-content">
 
-            <div className="input-area">
-                <input
-                    type="text"
-                    value={input}
-                    placeholder="Type your message..."
-                    onChange={(e) =>
-                        setInput(e.target.value)
-                    }
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            sendMessage();
+                {/* Main column */}
+                <div className="main-column">
+                    <div className="chat-window">
+                        {messages.map((msg, index) => (
+                            <div
+                                key={index}
+                                className={`message ${msg.role}`}
+                            >
+                                <div className="bubble">
+                                    <ReactMarkdown>
+                                        {msg.text}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
+                        ))}
+
+                        {loading && (
+                            <div className="message assistant">
+                                <div className="bubble">
+                                    Thinking...
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Input area */}
+                    {uploadStatus && (
+                        <div
+                            className={`upload-status ${
+                                uploadError ? "error" : "success"
+                            } ${
+                                statusVisible ? "visible" : "hidden"
+                            }`}
+                        >
+                            <span>{uploadStatus}</span>
+
+                            <button
+                                className="status-close"
+                                onClick={() => {
+                                    setStatusVisible(false);
+
+                                    setTimeout(() => {
+                                        setUploadStatus("");
+                                        setUploadError(false);
+                                    }, 500);
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="input-area">
+                        <label className="upload-btn">
+                            +
+                            <input
+                                type="file"
+                                accept=".pdf"
+                                hidden
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+
+                                    if (file) {
+                                        uploadFile(file);
+                                    }
+                                }}
+                            />
+                        </label>
+
+                        <input
+                            type="text"
+                            value={input}
+                            placeholder="Type your message..."
+                            onChange={(e) =>
+                                setInput(e.target.value)
+                            }
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    sendMessage();
+                                }
+                            }}
+                        />
+
+                        <button onClick={sendMessage}>
+                            Send
+                        </button>
+                    </div>
+                </div>
+
+                {/* Side bar area */}
+                <div
+                    className={`sidebar ${
+                        sidebarOpen ? "open" : "closed"
+                    }`}
+                >
+                    <button
+                        className="sidebar-toggle"
+                        onClick={() =>
+                            setSidebarOpen(!sidebarOpen)
                         }
-                    }}
-                />
+                    >
+                        {sidebarOpen ? "→" : "←"}
+                    </button>
 
-                <button onClick={sendMessage}>
-                    Send
-                </button>
+                    {sidebarOpen && (
+                        <div className="sidebar-content">
+                            <h3>Corpus</h3>
+
+                            {files.length === 0 ? (
+                                <p>No files uploaded.</p>
+                            ) : (
+                                files.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className="file-item"
+                                    >
+                                        📄 {file}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
+
         </div>
     );
 }
