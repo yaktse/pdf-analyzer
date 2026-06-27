@@ -6,6 +6,7 @@ import time
 
 from app.agent import Agent
 from app.preprocess import Preprocessor
+from app.global_vars import *
 
 app = FastAPI(title="PDF Analyzer")
 app.add_middleware(
@@ -19,7 +20,6 @@ app.add_middleware(
 )
 
 # Setup context directory
-CONTEXT_DIR = Path("_context")
 CONTEXT_DIR.mkdir(exist_ok=True)
 
 agent = Agent()
@@ -70,8 +70,14 @@ async def upload_pdf(file: UploadFile = File(...)):
         f.write(contents)
 
     time.sleep(3) # For testing
-    return {
+
+    metadata = {
         "filename": file.filename,
         "content_type": file.content_type,
         "size": len(contents),
     }
+
+    # Put data PDF through injestion pipeline
+    await preprocessor.injest_pdf(metadata, file.filename) 
+
+    return metadata

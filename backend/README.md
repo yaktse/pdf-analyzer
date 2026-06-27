@@ -1,0 +1,5 @@
+# how to run?
+
+```
+$ uvicorn app.main:app --host localhost --port 8080 --reload
+```

@@ -7,10 +7,14 @@ from langchain_core.messages import (
     HumanMessage,
 )
 
+from app.global_vars import *
+from app.preprocess import Preprocessor
+
 class Agent:
     def __init__(self):
         self.llm = None
         self.prelude()
+        self.PP = Preprocessor()
 
     def prelude(self):
         load_dotenv()
@@ -35,7 +39,24 @@ class Agent:
             ),
         ]
 
-    def reply(self, prompt):
-        self.messages.append(HumanMessage(prompt))
-        response = self.llm.invoke(self.messages) 
+    def reply(self, query):
+        results = self.PP.vectorstore.similarity_search(
+            query,
+            k=20
+        )
+        context = "\n\n".join(
+                doc.page_content
+                for doc in results
+        )
+
+        prompt = f"""
+Use the following context to answer the question.
+
+Context:
+{context}
+
+Question:
+{query}
+"""
+        response = self.llm.invoke(prompt) 
         return response.content
