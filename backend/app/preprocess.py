@@ -7,6 +7,12 @@ from langchain_chroma import Chroma
 from app.global_vars import *
 from pathlib import Path
 
+class ContextualChunk:
+    def __init__(self):
+        self.context = None
+        self.content = None
+
+
 class Preprocessor:
     def __init__(self):
         # NOTE: Heavy on CPU

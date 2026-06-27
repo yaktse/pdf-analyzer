@@ -4,6 +4,7 @@ import "./App.css";
 
 // For rendering responses from AI
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 function App() {
     const [messages, setMessages] = useState([]);
@@ -131,7 +132,7 @@ function App() {
                                 className={`message ${msg.role}`}
                             >
                                 <div className="bubble">
-                                    <ReactMarkdown>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                         {msg.text}
                                     </ReactMarkdown>
                                 </div>

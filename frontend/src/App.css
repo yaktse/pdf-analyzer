@@ -78,14 +78,48 @@ body {
     word-wrap: break-word;
 }
 
-/* Assistant response without bubble */
 .message.assistant .bubble {
     max-width: 80%;
     background: transparent;
     color: #e5e5e5;
     padding: 0;
+
     line-height: 1.8;
-    white-space: pre-wrap;
+
+    white-space: normal;
+}
+
+.message.assistant .bubble ul,
+.message.assistant .bubble ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+.message.assistant .bubble li {
+    margin: 0.5em 0;
+    line-height: 1.7;
+}
+
+.message.assistant .bubble li p {
+    margin: 0;
+    display: inline;
+}
+
+.message.assistant .bubble p {
+    margin: 0.75em 0;
+}
+
+.message.assistant .bubble code {
+    background: #2b2b2b;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+.message.assistant .bubble pre {
+    background: #1e1e1e;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
 }
 
 .input-area {
