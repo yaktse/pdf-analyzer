@@ -51,5 +51,3 @@ class Preprocessor:
         documents = loader.load()
         chunks = self.splitter.split_documents(documents)
         self.vectorstore.add_documents(chunks)
-
-        print(doc.metadata)
