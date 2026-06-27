@@ -1,5 +1,4 @@
 # Preprocess stuff
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -11,8 +10,9 @@ from pathlib import Path
 class Preprocessor:
     def __init__(self):
         # NOTE: Heavy on CPU
+        # from langchain_huggingface import HuggingFaceEmbeddings
         # self.embeddings = HuggingFaceEmbeddings(
-            # model_name="BAAI/bge-m3",
+            # model_name="BAAI/bge-m4",
             # model_kwargs={
                 # "device": "cpu"
             # },
@@ -23,7 +23,7 @@ class Preprocessor:
 
         # Very low CPU usage
         self.embeddings = FastEmbedEmbeddings(
-            model_name="BAAI/bge-small-en-v1.5"
+            model_name="snowflake/snowflake-arctic-embed-xs"
         )
 
         self.splitter = RecursiveCharacterTextSplitter(
